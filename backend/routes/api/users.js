@@ -3,6 +3,8 @@ const passport = require("passport");
 const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
 const User = mongoose.model("User");
+const { isProduction } = require("../../config/keys");
+const { loginUser, restoreUser } = require("../../config/passport");
 
 const router = express.Router();
 
@@ -41,7 +43,7 @@ router.post("/register", async (req, res, next) => {
       try {
         newUser.hashedPassword = hashedPassword;
         const user = await newUser.save();
-        return res.json({ user });
+        return res.json(loginUser(user));
       } catch (err) {
         next(err);
       }
@@ -59,8 +61,22 @@ router.post("/login", async (req, res, next) => {
       error.errors = { email: "Invalid credentials" };
       return next(error);
     }
-    return res.json({ user });
+    return res.json(loginUser(user));
   })(req, res, next);
+});
+
+/* GET /api/users/current */
+router.get("/current", restoreUser, (req, res) => {
+  if (!isProduction) {
+    const csrfToken = req.csrfToken();
+    res.cookie("CSRF-TOKEN", csrfToken);
+  }
+  if (!req.user) return res.json(null);
+  res.json({
+    _id: req.user._id,
+    username: req.user.username,
+    email: req.user.email,
+  });
 });
 
 module.exports = router;
