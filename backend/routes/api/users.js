@@ -1,4 +1,5 @@
 const express = require("express");
+const router = express.Router();
 const passport = require("passport");
 const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
@@ -7,8 +8,6 @@ const { isProduction } = require("../../config/keys");
 const { loginUser, restoreUser } = require("../../config/passport");
 const validateRegisterInput = require("../../validations/register");
 const validateLoginInput = require("../../validations/login");
-
-const router = express.Router();
 
 /* GET /api/users */
 router.get("/", (_req, res, _next) => {
